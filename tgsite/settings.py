@@ -12,6 +12,29 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 import os
+import dj_database_url            # ← لو مش منصّبه، أضِفها للـ requirements
+from dotenv import load_dotenv
+
+load_dotenv()
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+# مفاتيح/أعلام من البيئة (لا تحط أسرار في الكود)
+SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret")
+DEBUG = os.environ.get("DEBUG", "0") == "1"
+
+# في Render: خليه "*" مؤقتاً أو اسم دومين Render
+ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "*").split(",")
+
+# Render يمرّر هذا المتغير تلقائيًا مثل: https://your-app.onrender.com
+RENDER_EXTERNAL_URL = os.environ.get("RENDER_EXTERNAL_URL", "")
+CSRF_TRUSTED_ORIGINS = [RENDER_EXTERNAL_URL] if RENDER_EXTERNAL_URL else []
+
+# خلف بروكسي HTTPS (Render) — يساعد على معرفة البروتوكول الصحيح
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+
+#####################
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 # BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -20,25 +43,25 @@ import os
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-4-by8$7+e!b)qqt^@zy8rirr(h$@04xfbk%61170q1q0k!q(t_'
-from dotenv import load_dotenv
-load_dotenv()
+# SECRET_KEY = 'django-insecure-4-by8$7+e!b)qqt^@zy8rirr(h$@04xfbk%61170q1q0k!q(t_'
+# from dotenv import load_dotenv
+# load_dotenv()
 # SECURITY WARNING: don't run with debug turned on in production!
 # DEBUG = True
 
 # ALLOWED_HOSTS =  ["*"]
 # ALLOWED_HOSTS = ["*", "714267e31872.ngrok-free.app", "127.0.0.1", "localhost"]
-BASE_DIR = Path(__file__).resolve().parent.parent
+# BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret")
-DEBUG = os.environ.get("DEBUG", "0") == "1"
+# DEBUG = os.environ.get("DEBUG", "0") == "1"
 
 # أثناء النشر، عدّل إلى الدومين الفعلي لِـ Render (أو مؤقتًا "*")
-ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "*").split(",")
+# ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "*").split(",")
 
 # مهم لـ Django 4+ مع HTTPS
-render_url = os.environ.get("RENDER_EXTERNAL_URL", "")
-CSRF_TRUSTED_ORIGINS = [render_url] if render_url else []
+# render_url = os.environ.get("RENDER_EXTERNAL_URL", "")
+# CSRF_TRUSTED_ORIGINS = [render_url] if render_url else []
 
 # Application definition
 
@@ -86,13 +109,18 @@ WSGI_APPLICATION = 'tgsite.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    "default": dj_database_url.config(
+        default=os.environ.get("DATABASE_URL", f"sqlite:///{BASE_DIR/'db.sqlite3'}"),
+        conn_max_age=600,
+    )
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
@@ -128,7 +156,14 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = 'static/'
+# STATIC_URL = 'static/'
+STATIC_URL = "/static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"
+STORAGES = {
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"
+    }
+}
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
