@@ -13,7 +13,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+# BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 # Quick-start development settings - unsuitable for production
@@ -24,11 +24,21 @@ SECRET_KEY = 'django-insecure-4-by8$7+e!b)qqt^@zy8rirr(h$@04xfbk%61170q1q0k!q(t_
 from dotenv import load_dotenv
 load_dotenv()
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# DEBUG = True
 
 # ALLOWED_HOSTS =  ["*"]
-ALLOWED_HOSTS = ["*", "714267e31872.ngrok-free.app", "127.0.0.1", "localhost"]
+# ALLOWED_HOSTS = ["*", "714267e31872.ngrok-free.app", "127.0.0.1", "localhost"]
+BASE_DIR = Path(__file__).resolve().parent.parent
 
+# SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret")
+DEBUG = os.environ.get("DEBUG", "0") == "1"
+
+# أثناء النشر، عدّل إلى الدومين الفعلي لِـ Render (أو مؤقتًا "*")
+ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "*").split(",")
+
+# مهم لـ Django 4+ مع HTTPS
+render_url = os.environ.get("RENDER_EXTERNAL_URL", "")
+CSRF_TRUSTED_ORIGINS = [render_url] if render_url else []
 
 # Application definition
 
